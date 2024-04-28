@@ -26,11 +26,12 @@ eps_cross = [0,  -eps3, eps2;
 C_b_ECI = (2*eda^2 - 1)*I + 2*(eps*eps') - 2*eda*eps_cross; % rotation w/ quat
 
 [r_ECEF] = eci2ecef(JD_0, r_ECI);
+C_ECI_ECEF = r_ECI*r_ECEF';
 
 % Solve
 B_ECEF = (3*(m_ECEF'*r_ECEF)*r_ECEF - norm(r_ECEF)^2*m_ECEF)/(norm(r_ECEF))^5; % Mag. field vect in ECEF
 
-B_ECI = B_ECEF; % NEED TO FIND THIS TRANSFORM
+B_ECI = C_ECI_ECEF*B_ECEF; 
 
 B_b = C_b_ECI*B_ECI;
 
