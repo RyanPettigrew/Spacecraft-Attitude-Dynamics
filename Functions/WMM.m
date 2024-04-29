@@ -10,7 +10,6 @@ m_ECEF = a^3*[g_11; h_11; g_10];
 
 I = eye(3);    % Identity
 
-% Unpack Quat
 eps1 = q_b_ECI(1);
 eps2 = q_b_ECI(2);
 eps3 = q_b_ECI(3);
@@ -25,7 +24,7 @@ eps_cross = [0,  -eps3, eps2;
 
 C_b_ECI = (2*eda^2 - 1)*I + 2*(eps*eps') - 2*eda*eps_cross; % rotation w/ quat
 
-[r_ECEF] = eci2ecef(JD_0, r_ECI);
+r_ECEF = eci2ecef_manual(JD_0, r_ECI);
 C_ECI_ECEF = r_ECI*r_ECEF';
 
 % Solve
@@ -37,4 +36,15 @@ B_b = C_b_ECI*B_ECI;
 
 Tb_b = m_b*B_b;
 
+end
+
+function r_ECEF = eci2ecef_manual(JD, r_ECI)
+%     omega_earth = 7.2921159e-5; 
+    T_UT1 = (JD - 2451545.0)/36525; % Time in Julian centuries from J2000
+    GMST = mod(67310.54841 + (876600*3600 + 8640184.812866)*T_UT1 + 0.093104*T_UT1^2 - 6.2e-6*T_UT1^3, 86400) / 240; % in degrees
+    GMST = deg2rad(GMST); 
+
+    % Rotation matrix -ECI to ECEF
+    R_ECI2ECEF = [cos(GMST) sin(GMST) 0; -sin(GMST) cos(GMST) 0; 0 0 1];
+    r_ECEF = R_ECI2ECEF * r_ECI;
 end
