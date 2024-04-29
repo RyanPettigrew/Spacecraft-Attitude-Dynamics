@@ -1,22 +1,18 @@
 function [dr,dv] = orbitalDynamics(r, v)
-%#codegen
-muE = 398600;      %km^3/s^2, Mu Earth
-
+muE = 398600; % km^3/s^2, Mu Earth
 rx = r(1);
 ry = r(2);
 rz = r(3);
+vx = v(1); 
+vy = v(2); 
+vz = v(3); 
 
-vx = v(4);
-vy = v(5);
-vz = v(6);
+r_norm = norm([rx ry rz]);
 
-r = norm([rx ry rz]);
-
-dvx = -muE*rx/r^3;
-dvy = -muE*ry/r^3;
-dvz = -muE*rz/r^3;
+dvx = -muE*rx / r_norm^3;
+dvy = -muE*ry / r_norm^3;
+dvz = -muE*rz / r_norm^3;
 
 dr = [vx; vy; vz];
 dv = [dvx; dvy; dvz];
-
 end
