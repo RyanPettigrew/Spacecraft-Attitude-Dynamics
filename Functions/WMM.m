@@ -27,6 +27,8 @@ C_b_ECI = (2*eda^2 - 1)*I + 2*(eps*eps') - 2*eda*eps_cross; % rotation w/ quat
 r_ECEF = eci2ecef_manual(JD_0, r_ECI);
 C_ECI_ECEF = r_ECI*r_ECEF';
 
+m_b = C_b_ECI*(C_ECI_ECEF*m_ECEF)
+
 % Solve
 B_ECEF = (3*(m_ECEF'*r_ECEF)*r_ECEF - norm(r_ECEF)^2*m_ECEF)/(norm(r_ECEF))^5; % Mag. field vect in ECEF
 
