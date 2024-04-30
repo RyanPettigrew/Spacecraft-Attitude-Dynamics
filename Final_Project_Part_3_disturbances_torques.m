@@ -67,6 +67,7 @@ surfaceProperties = [Areas_1 cps_1 normals_1; Areas_2 cps_2 normals_2; Areas_3 c
 % Need this so we can convert from F_ECEF to F_ECI and to F_b for the
 % magnetic field model
 JD_0 = 2460390;
+sun_ECI = [1;0;0];
 
 % Spacecraft Orbit Properties
 mu = 398600;        % km^3/s^2
