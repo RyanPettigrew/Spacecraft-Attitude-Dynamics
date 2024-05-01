@@ -1,11 +1,8 @@
 %% Final Simulation Project
-% Template for part 3 - Disturbance Modeling
+% Part 3 - Disturbance Modeling
 % Aero 421
-% Cal Poly, SLO
 
-clear
-close all
-clc
+clear; close all; clc;
 
 %% Part 1 - Mass Properties
 
@@ -68,6 +65,7 @@ surfaceProperties = [Areas_1 cps_1 normals_1; Areas_2 cps_2 normals_2; Areas_3 c
 % Need this so we can convert from F_ECEF to F_ECI and to F_b for the
 % magnetic field model
 JD_0 = 2460390;
+m_b = [0;0;-0.5];
 
 % Spacecraft Orbit Properties
 mu = 398600;        % km^3/s^2
@@ -165,7 +163,7 @@ Tby = Tb(:,2);
 Tbz = Tb(:,3);
 
 % Plot Angular Velocities, Euler Angles and Quaternions
-figure(2);
+figure(1);
 subplot(3,1,1);
 plot(time, w1);
 hold on;
@@ -199,7 +197,7 @@ legend('\phi', '\theta', '\psi',"Location","northeastoutside");
 grid on;
 
 % Plot Disturbance torques in F_b
-figure(3);
+figure(2);
 subplot(2,1,1);
 hold on;
 grid on;
@@ -216,7 +214,8 @@ title('SRP Torque');
 plot(time,Tsx,time,Tsy,time,Tsz);
 ylabel('SRP Torque (N-m)');
 legend('T_{sx}','T_{sy}','T_{sz}',"Location","northeastoutside");
-figure(4);
+
+figure(3);
 subplot(2,1,1);
 hold on;
 grid on;
@@ -334,5 +333,3 @@ C = [cy*cp, cy*sp*sr - sy*cr, cy*sp*cr + sy*sr;
      sy*cp, sy*sp*sr + cy*cr, sy*sp*cr - cy*sr;
      -sp, cp*sr, cp*cr];
 end
-
-
