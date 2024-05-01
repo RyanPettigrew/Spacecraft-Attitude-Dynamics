@@ -29,9 +29,10 @@ disp(J_sc);
 %% Part 2 - Geometric Properties of MehielSat during Normal Operations
 
 % Define the sun in F_ECI and residual dipole moment in F_b
+sun_ECI = [1;0;0];
 
 % I constructed a matrix where the rows represent each surface of the
-% MehielSat.  The first column stores the Area of the surface, the next
+% MehielSat. The first column stores the Area of the surface, the next
 % three columns define the normal vector of that surface in F_b, and the
 % final three columns store the center of pressure of the surface (geometric
 % center of the surface) in F_b.
@@ -67,7 +68,6 @@ surfaceProperties = [Areas_1 cps_1 normals_1; Areas_2 cps_2 normals_2; Areas_3 c
 % Need this so we can convert from F_ECEF to F_ECI and to F_b for the
 % magnetic field model
 JD_0 = 2460390;
-sun_ECI = [1;0;0];
 
 % Spacecraft Orbit Properties
 mu = 398600;        % km^3/s^2
@@ -84,6 +84,8 @@ orbital_period = 2*pi*sqrt(a^3/mu);
 % Set/Compute initial conditions
 % intial orbital position and velocity
 [rPeri,vPeri,rECI,vECI] = coes2rv(ecc,a,inc,raan,aop,theta,mu);
+r_ECI_0 = rECI;
+v_ECI_0 = vECI;
 
 % No external command Torque
 T_c = [0; 0; 0]; % Nm
@@ -125,36 +127,42 @@ out = sim('Final_Project_Part_3_disturbances');
 %% Part 5 - Plot Results
 
 % Get variables
-time=out.tout;
-w=out.w_b_ECI.signals.values;
-w1=w(:,1);
-w2=w(:,2);
-w3=w(:,3);
-EA=out.E_b_ECI.signals.values;
-phi=(180/pi).*EA(:,1);
-theta=(180/pi).*EA(:,2);
-psi=(180/pi).*EA(:,3);
-q=out.q_b_ECI.signals.values;
-q1=q(:,1);
-q2=q(:,2);
-q3=q(:,3);
-eta=q(:,4);
-Tg=out.T_gg.signals.values;
-Tgx=Tg(:,1);
-Tgy=Tg(:,2);
-Tgz=Tg(:,3);
-Ts=out.T_srp.signals.values;
-Tsx=Ts(:,1);
-Tsy=Ts(:,2);
-Tsz=Ts(:,3);
-Ta=out.T_a.signals.values;
-Tax=Ta(:,1);
-Tay=Ta(:,2);
-Taz=Ta(:,3);
-Tb=squeeze(out.T_b.signals.values)';
-Tbx=Tb(:,1);
-Tby=Tb(:,2);
-Tbz=Tb(:,3);
+time = out.tout;
+
+w = out.w_b_ECI.signals.values;
+w1 = w(:,1);
+w2 = w(:,2);
+w3 = w(:,3);
+
+EA = out.E_b_ECI.signals.values;
+phi = (180/pi).*EA(:,1);
+theta = (180/pi).*EA(:,2);
+psi = (180/pi).*EA(:,3);
+
+q = out.q_b_ECI.signals.values;
+q1 = q(:,1);
+q2 = q(:,2);
+q3 = q(:,3);
+eta = q(:,4);
+
+Tg = out.T_gg.signals.values;
+Tgx = Tg(:,1);
+Tgy = Tg(:,2);
+Tgz = Tg(:,3);
+
+Ts = out.T_srp.signals.values;
+Tsx = Ts(:,1);
+Tsy = Ts(:,2);
+Tsz = Ts(:,3);
+Ta = out.T_a.signals.values;
+Tax = Ta(:,1);
+Tay = Ta(:,2);
+Taz = Ta(:,3);
+
+Tb = squeeze(out.T_b.signals.values)';
+Tbx = Tb(:,1);
+Tby = Tb(:,2);
+Tbz = Tb(:,3);
 
 % Plot Angular Velocities, Euler Angles and Quaternions
 figure(2);
@@ -326,7 +334,5 @@ C = [cy*cp, cy*sp*sr - sy*cr, cy*sp*cr + sy*sr;
      sy*cp, sy*sp*sr + cy*cr, sy*sp*cr - cy*sr;
      -sp, cp*sr, cp*cr];
 end
-
-
 
 
