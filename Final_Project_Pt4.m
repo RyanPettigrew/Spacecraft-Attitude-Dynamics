@@ -2,6 +2,7 @@
 % Part 4 - LVLH Relative Kinematics
 % Aero 421
 
+clc; clear; close all;
 
 % Mass properties for normal operations phase
 m = 640; %kg, mass of s/c
@@ -79,8 +80,8 @@ orbital_period = 2*pi*sqrt(a^3/mu);
 % Set/Compute initial conditions
 % intial orbital position and velocity
 [rPeri,vPeri,rECI,vECI] = coes2rv(ecc,a,inc,raan,aop,theta,mu);
-r_ECI = rECI;
-v_ECI = vECI;
+r_ECI_0 = rECI;
+v_ECI_0 = vECI;
 
 % No external command Torque and no disturbance torque
 T_c = [0; 0; 0]; % Nm
@@ -96,23 +97,23 @@ x_LVLH = cross(y_LVLH,z_LVLH);
 phi_0 = 0;
 theta_0 = 0;
 psi_0 = 0;
-E_b_LVLH = [phi_0; theta_0; psi_0];
+E_b_LVLH_0 = [phi_0; theta_0; psi_0];
 
 % Initial Quaternion relating F_body and F_LVLH (given)
-q_b_LVLH = [0; 0; 0; 1];
+q_b_LVLH_0 = [0; 0; 0; 1];
 
 % Compute initial C_LVLH_ECI_0, C_b_LHVL_0, and C_b_ECI_0 rotaiton matrices
-C_b_ECI = [x_LVLH y_LVLH z_LVLH]';
-C_b_LVLH = Euler2C(phi_0, theta_0, psi_0);
+C_b_ECI_0 = [x_LVLH y_LVLH z_LVLH]';
+C_b_LVLH_0 = Euler2C(phi_0, theta_0, psi_0);
 
 % Initial Euler angles relating body to ECI
-E_b_ECI = C2EulerAngles(C_b_ECI_0);
+E_b_ECI_0 = C2EulerAngles(C_b_ECI_0);
 
 % Initial quaternion relating body to E
-q_b_ECI = C2quat(C_b_ECI_0);
+q_b_ECI_0 = C2quat(C_b_ECI_0);
 
 % Initial body rates of spacecraft (given)
-w_b_ECI = [0.001; -0.001; 0.002];
+w_b_ECI_0 = [0.001; -0.001; 0.002];
 
 %% Part 4 - Simulate Results
 
@@ -131,27 +132,37 @@ w2 = w_ECI(:,2);
 w3 = w_ECI(:,3);
 
 w_LVLH = out.w_b_LVLH.signals.values;
+[rows, cols, depth] = size(w_LVLH);
+w_LVLH = reshape(w_LVLH, rows*cols, depth)';
 w4 = w_LVLH(:,1);
 w5 = w_LVLH(:,2);
 w6 = w_LVLH(:,3);
 
 EA_ECI = out.E_b_ECI.signals.values;
+[rows, cols, depth] = size(EA_ECI);
+EA_ECI = reshape(EA_ECI, rows*cols, depth)';
 phi = (180/pi).*EA_ECI(:,1);
 theta = (180/pi).*EA_ECI(:,2);
 psi = (180/pi).*EA_ECI(:,3);
 
 EA_LVLH = out.E_b_LVLH.signals.values;
+[rows, cols, depth] = size(EA_LVLH);
+EA_LVLH = reshape(EA_LVLH, rows*cols, depth)';
 phi1 = (180/pi).*EA_LVLH(:,1);
 theta2 = (180/pi).*EA_LVLH(:,2);
 psi3 = (180/pi).*EA_LVLH(:,3);
 
 q_ECI = out.q_b_ECI.signals.values;
+[rows, cols, depth] = size(q_ECI);
+q_ECI = reshape(q_ECI, rows*cols, depth)';
 q1 = q_ECI(:,1);
 q2 = q_ECI(:,2);
 q3 = q_ECI(:,3);
 eta = q_ECI(:,4);
 
 q_LVLH = out.q_b_LVLH.signals.values;
+[rows, cols, depth] = size(q_LVLH);
+q_LVLH = reshape(q_LVLH, rows*cols, depth)';
 q4 = q_LVLH(:,1);
 q5 = q_LVLH(:,2);
 q6 = q_LVLH(:,3);
@@ -323,3 +334,4 @@ C = [cy*cp, cy*sp*sr - sy*cr, cy*sp*cr + sy*sr;
      sy*cp, sy*sp*sr + cy*cr, sy*sp*cr - cy*sr;
      -sp, cp*sr, cp*cr];
 end
+
