@@ -1,4 +1,4 @@
-% clear; clc;
+clear; clc; close all;
 
 addpath("Functions\");
 
@@ -33,7 +33,7 @@ cps_4 = [0.25 0 1.5;-0.25 0 1.5;0 0.25 1.5;0 -0.25 1.5;0 0 2];
 surfaceProperties = [Areas_1 cps_1 normals_1; Areas_2 cps_2 normals_2; Areas_3 cps_3 normals_3; Areas_4 cps_4 normals_4];
 
 % Spacecraft Orbit Properties (given)
-global mu
+global mu ;
 mu = 398600; % km^3/s^2
 h = 53335.2; % km^2/s
 ecc = 0; % none
@@ -65,20 +65,19 @@ E_b_LVLH_0 = [phi_0; theta_0; psi_0];
 q_b_LVLH_0 = [0; 0; 0; 1];
 
 % Compute initial C_LVLH_ECI_0, C_b_LHVL_0, and C_b_ECI_0 rotaiton matrices
-C_b_ECI_0 = [x_LVLH y_LVLH z_LVLH]';
+C_b_ECI_0 = [x_LVLH y_LVLH z_LVLH]' ;
 C_b_LVLH_0 = Euler2C(phi_0, theta_0, psi_0);
 
 % Initial Euler angles relating body to ECI
 E_b_ECI_0 = C2EulerAngles(C_b_ECI_0);
 
 % Initial quaternion relating body to Eci
-% q_b_ECI_0 = C2quat(C_b_ECI_0);
+q_b_ECI_0 = C2quat(C_b_ECI_0);
 
 % % Initial body rates of spacecraft (given)
-% w_b_ECI_0 = [0.01; -0.05; 0.05];
+w_b_ECI_0 = [0.01; -0.05; 0.05];
 
 %% Finding Gain
-close all;
 Mp = 0.02;    % Max overshoot
 ts = 100; % Settle time
 zeta= 0.65;
@@ -88,59 +87,72 @@ wn = wd/sqrt(1-zeta^2);
 % wn = 4 / (zeta * ts);
 % beta = atan(sqrt((1 - zeta^2)/zeta));
 
-Kp = 2*J*wn^2.*[1 1 1];
-Kd = J*2*zeta*wn.*[1 1 1];
+Kp = 2*J*wn^2*eye(3) ;
+Kd = J*2*zeta*wn.*eye(3) ;
 
 epsilon_C = [0.2; -0.5; 0.3];
-% q_C = [epsilon_C; sqrt(1-norm(epsilon_C)^2)];
+q_C = [epsilon_C; sqrt(1-norm(epsilon_C)^2)];
 % n0 = sqrt(1- epsilon_C' *epsilon_C)
 % p = -3*wn + wn*sqrt(zeta^2 -1) *1i
-epsilon_b_ECI_0 = [-.2; .4; .2];
+epsilon_b_ECI_0 = [-.2; .4; .2] ;
 q_b_ECI_0 = [epsilon_b_ECI_0; sqrt(1-norm(epsilon_b_ECI_0)^2)];
 % q_C = sqrt(1 - epsilon_C'.*epsilon_C);
 w_b_ECI_0 = [.1; -.05; .05];
 
 % epsilon_C = [.1; -.3; .4];
 % epsilon_C = [0; 0; 0];
-q_C = [epsilon_C; sqrt(1-norm(epsilon_C)^2)]; 
+% q_C = [epsilon_C; sqrt(1-norm(epsilon_C)^2)]; 
 
 % A = [zeros(3,3), eye(3);
 %     -0.5* J\ Kp, -J\Kd];
 
 % State-space representation
-A = zeros(3,3);
-B = 1\J;
-C = eye(3);
-D = zeros(3,3);
-Q = eye(3);
-R = eye(3);
-K = lqr(A, B, Q, R);
+% A = zeros(3,3);
+% B = 1\J;
+% C = eye(3);
+% D = zeros(3,3);
+% Q = eye(3);
+% R = eye(3);
+% K = lqr(A, B, Q, R);
+% K = [Kp Kd];
 
-T_control = [0; 0; 0]*2;
+T_control = [0; 0; 0];
 tspan = 150;
 
 % out = sim('ProjectSim');
-out = sim('ProjectSim.slx');
+out = sim('hw5_sim.slx') ;
 
 
 %% Plot Results
-subplot(2,1,1); hold on;
-plot(out.q_b_ECI.time, out.q_b_ECI.signals.values)
-% plot(q_b_ECI.time, squeeze(q_b_ECI.signals.values))
-% plot(out.tout, out.q_b_ECI(:,2), out.tout, out.q_b_ECI(:,3), out.tout, out.q_b_ECI(:,4), out.tout, out.q_b_ECI(:,5));
-title('Quaternions');
+figure;
+subplot(2,1,1); 
+plot(out.q_b_ECI.time, out.q_b_ECI.signals.values);
+title('Non Linear Quaternions');
 ylabel('Quat Angles');
 legend("q0", "q1", "q2", "q3");
-hold off; grid on;
+grid on;
 
-subplot(2,1,2); hold on;
+subplot(2,1,2);
 plot(out.omega.time, out.omega.signals.values);
-% plot(omega.time, omega.signals.values)
-% plot(out.tout, out.omega(:,2), out.tout, out.w_b_ECI(:,3), out.tout, out.w_b_ECI(:,4));
 title('Angular Velocities');
 ylabel('Angular Velocity (rad/sec)');
 legend("wx", "wy", "wz");
-hold off; grid on;
+grid on;
+
+figure;
+subplot(2,1,1);
+plot(out.lin.time, squeeze(out.lin.signals.values));
+title('Linear Model -Quaternions');
+ylabel('Quat Angles');
+legend("q0", "q1", "q2", "q3");
+
+ grid on;
+subplot(2,1,2); hold on;
+plot(out.lin.time, squeeze(out.linInt.signals.values));
+title('Linear Angular Velocities');
+ylabel('Angular Velocity (rad/sec)');
+legend("wx", "wy", "wz");
+grid on;
 
 % subplot(3,1,3); hold on;
 % plot(out.tout, out.E_b_ECI(1:140,2),out.tout, out.E_b_ECI(1,3));
@@ -157,6 +169,17 @@ title('Torque Commands');
 xlabel('Time (sec)'); ylabel('Torque');
 legend("Tx", "Ty", "Tz");
 hold off;
+
+% 
+% torque_norm = sqrt(sum(out.T_Control.signals.values.^2));  
+% figure;hold on;
+% plot(out.T_Control.time, torque_norm); 
+% 
+% title('Torque Commands and Norm');
+% xlabel('Time (sec)'); ylabel('Torque (Nm)');
+% legend("Tx", "Ty", "Tz", "Norm of Torque");
+% hold off;
+
 %% Functions Used
 
 function [C] = principleRotations(inp,angle)
@@ -174,7 +197,7 @@ elseif inp == 'z'
  -sin(angle) cos(angle) 0;
  0 0 1];
 else
- error('Error: Input character must be x, y, or z')
+ error('Error: Input character must be x, y, or z');
 end
 end
 
