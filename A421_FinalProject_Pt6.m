@@ -104,9 +104,11 @@ E_b_LVLH_0 = [phi_0; theta_0; psi_0];
 q_b_LVLH_0 = [0; 0; 0; 1];
 
 % Compute initial C_LVLH_ECI_0, C_b_LHVL_0, and C_b_ECI_0 rotaiton matrices
-C_LVLH_ECI_0 = [x_LVLH'; y_LVLH'; z_LVLH'];
-C_b_LVLH_0 = Cx(phi_0)*Cy(theta_0)*Cz(psi_0);
-C_b_ECI_0 = C_b_LVLH_0*C_LVLH_ECI_0;
+% C_LVLH_ECI_0 = [x_LVLH'; y_LVLH'; z_LVLH'];
+% C_b_LVLH_0 = Cx(phi_0)*Cy(theta_0)*Cz(psi_0);
+% C_b_ECI_0 = C_b_LVLH_0*C_LVLH_ECI_0;
+C_b_ECI_0 = [x_LVLH y_LVLH z_LVLH]';
+C_b_LVLH_0 = Euler2C(phi_0, theta_0, psi_0);
 
 % Initial Euler angles relating body to ECI
 E_b_ECI_0 = C2EulerAngles(C_b_ECI_0);
@@ -120,21 +122,18 @@ w_b_ECI_0 = [0.001; -0.001; 0.002];
 %% Finding Gain
 Mp = 0.02;    % Max overshoot
 ts = 100;     % Settle time
-
+zeta = 0.65;
 %% Single Axis Analysis
 Mp_reg = .1;
 % tr < 12;
 
-zeta = 0.65;
-
-wn = log(0.02*sqrt(1-zeta^2))/-zeta/ts;
-
-beta = atan(sqrt(1-zeta^2)/zeta);
-tr = (pi-beta)/wn/sqrt(1-zeta^2);
-
-% Extend to each Axis
-Kp = 2*J*wn^2.;
-Kd = J*2*zeta*wn;
+% zeta = 0.65;
+% wn = log(0.02*sqrt(1-zeta^2))/-zeta/ts;
+% beta = atan(sqrt(1-zeta^2)/zeta);
+% tr = (pi-beta)/wn/sqrt(1-zeta^2);
+% % Extend to each Axis
+% Kp = 2*J*wn^2.;
+% Kd = J*2*zeta*wn;
 
 epsilon_b_ECI_0 = [-.2; .4; .2];
 q_b_ECI_0 = [epsilon_b_ECI_0; sqrt(1-norm(epsilon_b_ECI_0)^2)];
@@ -143,20 +142,28 @@ w_0 = [.1; -.1; .2];
 %epsilon_C = [.1; -.3; .4];
 epsilon_C = [0; 0; 0];
 q_C = [epsilon_C; sqrt(1-norm(epsilon_C)^2)]; 
-
+omega = [ 0; 0; 0];
+domega_rw=[0;0;0];
 %% Reaction Wheel Properties
 m_w = 1;   % kg
 I_s = 1.2; % kg/m2
 I_t = 0.6; % kg/m2
 
 I_tot = J_sc + (I_s + 2*I_t + 2*m_w)*eye(3);
+Is = ([1.2 0 0; 0 0.6 0; 0 0 1.2]);
+% Is_inv = inv([1.2 0 0; 0 1.2 0; 0 0 1.2]);
 
-Is_inv = inv([1.2 0 0; 0 1.2 0; 0 0 1.2]);
+wd_rw = 4.4/(zeta*ts);
+wn_rw = wd_rw/sqrt(1-zeta^2);
+
+Kp = 2*Is*wn_rw^2*eye(3) ;
+Kd = Is*2*zeta*wn_rw.*eye(3) ;
 
 %% Simulate Results
 
 n_revs = 1; % revs
 tspan = n_revs * orbital_period;
+% tspan = 30000;
 out = sim('Final_Project_Pt6.slx');  %CHANGE THIS TO MATCH YOUR SIM
 
 %% Plot Results
@@ -210,6 +217,25 @@ xlabel('Time (sec)')
 legend('T_{bx}','T_{by}','T_{bz}')
 grid on
 
+
+figure
+subplot(3,1,1)
+plot(out.tout, squeeze(out.T_Control.signals.values))
+ylabel('Controller Ouput')
+legend('X','Y','Z')
+grid on
+
+subplot(3,1,2)
+plot(out.tout, squeeze(out.Moment_Wheel.signals.values))
+ylabel('Moment Rxn Wheel')
+legend('Mx','My','Mz')
+grid on
+
+subplot(3,1,3)
+plot(out.tout, squeeze(out.reaction_wheel_vel.signals.values))
+ylabel('Rxn Wheel CMD Speeds')
+legend('Omega_w1','Omega_w2','Omega_w3')
+grid on
 %% Functions Used
 function [C] = principleRotations(inp,angle)
 % Principle Rotation function returns Cx, Cy, Cz
