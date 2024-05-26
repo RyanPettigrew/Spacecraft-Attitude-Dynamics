@@ -162,8 +162,8 @@ Kd = Is*2*zeta*wn_rw.*eye(3) ;
 %% Simulate Results
 
 n_revs = 1; % revs
-tspan = n_revs * orbital_period;
-% tspan = 30000;
+% tspan = n_revs * orbital_period;
+tspan = 30000;
 out = sim('Final_Project_Pt6.slx');  %CHANGE THIS TO MATCH YOUR SIM
 
 %% Plot Results
@@ -184,7 +184,7 @@ grid on
 
 E_b_ECI = squeeze(out.E_b_ECI.signals.values);
 subplot(3,1,3)
-plot(out.tout, 180/pi*out.E_b_ECI.signals.values)
+plot(out.tout, out.E_b_ECI.signals.values)
 title('Euler Angles')
 xlabel('time (seconds)')
 ylabel('Angle (deg)')
@@ -221,19 +221,19 @@ grid on
 figure
 subplot(3,1,1)
 plot(out.tout, squeeze(out.T_Control.signals.values))
-ylabel('Controller Ouput')
+title('Controller Ouput')
 legend('X','Y','Z')
 grid on
 
 subplot(3,1,2)
 plot(out.tout, squeeze(out.Moment_Wheel.signals.values))
-ylabel('Moment Rxn Wheel')
+title('Moment Rxn Wheel');
 legend('Mx','My','Mz')
 grid on
 
 subplot(3,1,3)
 plot(out.tout, squeeze(out.reaction_wheel_vel.signals.values))
-ylabel('Rxn Wheel CMD Speeds')
+title('Rxn Wheel CMD Speeds')
 legend('Omega_w1','Omega_w2','Omega_w3')
 grid on
 %% Functions Used
